@@ -1,0 +1,194 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Calling WebMethod / PageMethods with jQuery</title>
+    <script src="js/jquery.v1.11.0.min.js"></script>
+    <script src="js/json2.js"></script>
+</head>
+<body>
+    
+    <div>
+        This is a set of examples of how to call ASP.NET methods decorated with the [WebMethod] attribute on an .aspx page which are commonly referred to as page methods from JavaScript using jQuery.<br/>
+    </div>
+    
+    <br /><br />
+
+    <fieldset>
+        <legend>Call a WebMethod with No Parameters</legend>
+        <input type="button" id="GetRandomPunButton" value="Get Random Pun" />
+        <br /> <br />
+        <div id="GetRandomPunResults"></div>
+    </fieldset>
+
+    <script>
+        $('#GetRandomPunButton').click(function() {
+            $.ajax({
+                type: "POST",
+                url: "Api/Pun.aspx/GetRandomPun",
+                data: "{}", /* In some versions of jQuery you must send an empty JSON object to any method that takes zero parameters so just do it */
+                contentType: "application/json", /* Must specify the content type */
+                dataType: "json",
+                success: function(data) {
+                    $("#GetRandomPunResults").text(data.d.Joke);
+                }
+            });
+        });
+    </script>
+    
+    <br /><br />
+
+    <fieldset>
+        <legend>Call a WebMethod with A Single Value-Type Parameter</legend>
+        <input type="button" id="GetPunByIdButton" value="Get Pun By Id" />
+        <input type="text" id="GetPunByIdTextbox" value="1" style="margin-left: 10px;" />
+        <br /> <br />
+        <div id="GetPunByIdResults"></div>
+    </fieldset>
+
+    <script>
+        $('#GetPunByIdButton').click(function () {
+
+            var id = $("#GetPunByIdTextbox").val();
+
+            if (id == "")
+                alert("Please enter an id.");
+
+            $.ajax({
+                type: "POST",
+                url: "Api/Pun.aspx/GetPunById",
+                data: '{ "id" : "' + id + '" }', /* Must send a JSON string and not an object literal */
+                contentType: "application/json", /* Must specify the content type */
+                dataType: "json",
+                success: function (data) {
+                    $("#GetPunByIdResults").text(data.d.Joke);
+                }
+            });
+        });
+    </script>
+    
+    <br /><br />
+
+    <fieldset>
+        <legend>Call a WebMethod that Throws an Exception</legend>
+        <input type="button" id="GetExceptionButton" value="Get Exception" />
+        <br /> <br />
+        <div id="GetExceptionResults"></div>
+    </fieldset>
+
+    <script>
+        $('#GetExceptionButton').click(function () {
+
+            $.ajax({
+                type: "POST",
+                url: "Api/Pun.aspx/GetException",
+                data: '{}', /* Must send a JSON string and not an object literal */
+                contentType: "application/json", /* Must specify the content type */
+                dataType: "json",
+                error: function (jqXHR, textStatus, errorThrown) {
+                    $("#GetExceptionResults").text(jqXHR.responseJSON.Message);
+                }
+            });
+        });
+    </script>
+    
+    <br /><br />
+
+    <fieldset>
+        <legend>Call a WebMethod with A Complex Parameter</legend>
+        <label for="AddPunJokeTextbox">Joke: </label>
+        <input type="text" id="AddPunJokeTextbox" style="margin-left: 10px;" />
+        <br />
+        <label for="AddPunAuthorTextbox">Author: </label>
+        <input type="text" id="AddPunAuthorTextbox" style="margin-left: 10px;" />
+        <br />
+        <input type="button" id="AddPunButton" value="Add Pun" />
+        <br /> <br />
+        <div id="AddPunResults"></div>
+    </fieldset>
+
+    <script>
+        $('#AddPunButton').click(function () {
+
+            var joke = $("#AddPunJokeTextbox").val();
+
+            if (joke == "") {
+                alert("Please enter a joke.");
+                return;
+            }
+
+            var author = $("#AddPunAuthorTextbox").val();
+
+            if (author == "") {
+                alert("Please enter an author.");
+                return;
+            }
+
+            var request = {
+                pun: {
+                    Joke: joke,
+                    Author: author
+                }
+            };
+
+            $.ajax({
+                type: "POST",
+                url: "Api/Pun.aspx/AddPun",
+                data: JSON.stringify( request ), /* Must send a JSON string and not an object literal */
+                contentType: "application/json", /* Must specify the content type */
+                dataType: "json",
+                success: function (data) {
+                    $("#AddPunResults").text( "Added new pun id " + data.d);
+                }
+            });
+        });
+    </script>
+    
+    <br /><br />
+
+    <fieldset>
+        <legend>Call a WebMethod and Return a List</legend>
+        <input type="button" id="GetAllPunsButton" value="Add Pun" />
+        <br /> <br />
+        <div id="GetAllPunsResults">
+            <table>
+                <thead>
+                    <tr>
+                        <td>Id</td>
+                        <td>Joke</td>
+                        <td>Author</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    
+                </tbody>
+            </table>
+        </div>
+    </fieldset>
+
+    <script>
+        $('#GetAllPunsButton').click(function () {
+            
+            $.ajax({
+                type: "POST",
+                url: "Api/Pun.aspx/GetAllPuns",
+                data: "{}", /* In some versions of jQuery you must send an empty JSON object to any method that takes zero parameters so just do it */
+                contentType: "application/json", /* Must specify the content type */
+                dataType: "json",
+                success: function (data) {
+
+                    var text = "";
+
+                    $.each(data.d, function(index, item) {
+                        text += "<tr><td>" + item.Id + "</td><td>" + item.Joke + "</td><td>" + item.Author + "</td></tr>";
+                    });
+
+                    $("#GetAllPunsResults tbody").html("");
+
+                    $("#GetAllPunsResults tbody").append(text);
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
